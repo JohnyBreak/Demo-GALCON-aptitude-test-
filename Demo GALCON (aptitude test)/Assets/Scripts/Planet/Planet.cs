@@ -125,7 +125,7 @@ public class Planet : MonoBehaviour
         if (planetStatus != Status.Neutral)
         {
             countOfShips++;
-            UpdateEnemyShips();
+            //UpdateEnemyShips();
             tmp.text = countOfShips.ToString();
         }
     }
@@ -134,7 +134,7 @@ public class Planet : MonoBehaviour
         if (countOfShips > 0)
         {
             countOfShips--;
-            UpdateEnemyShips();
+            //UpdateEnemyShips();
             tmp.text = countOfShips.ToString();
         }
         else
@@ -146,7 +146,7 @@ public class Planet : MonoBehaviour
     }
     void UpdateEnemyShips()
     {
-        enemy.UpdateCountOfShips(countOfShips);
+       // enemy.UpdateCountOfShips(countOfShips);
     }
     void SpawnEnemyShips()
     {
