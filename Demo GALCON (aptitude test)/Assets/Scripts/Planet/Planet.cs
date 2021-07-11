@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
 public class Planet : MonoBehaviour
 {
     [SerializeField] private GameObject ship;
-    [SerializeField] private int _leaveShipsCount;
+    [SerializeField] private int _leaveShipsCount, _maxShips = 300;
     public bool _isSelected;
     public int countOfShips = 0;
     private float _planetRadius;
@@ -14,9 +13,10 @@ public class Planet : MonoBehaviour
     [SerializeField] private Material playerMat, enemyMat, neutralMat;
     [SerializeField] private TextMeshPro tmp;
     [SerializeField] private int _maxRange = 5, _minRange = 65;
-    private Enemy enemy;
     private float increaseTimer;
-    public GameObject enemyAttackPlanet;
+    private GameObject _planetForAttack;
+
+
     bool timer = true;
     public enum Status
     {
@@ -38,7 +38,6 @@ public class Planet : MonoBehaviour
         _isSelected = false;
         SetStatus();
         StartIncreasingShips();
-        enemy = GetComponent<Enemy>();
     }
     void SetStatus()
     {
@@ -46,23 +45,15 @@ public class Planet : MonoBehaviour
         {
             case Status.Player:
                 sprite.GetComponent<SpriteRenderer>().color = Color.blue;
-                //GetComponent<Enemy>().enabled = false;
                 break;
             case Status.Enemy:
                 sprite.GetComponent<SpriteRenderer>().color = Color.red;
-                //GetComponent<Enemy>().enabled = true;
                 break;
             case Status.Neutral:
                 sprite.GetComponent<SpriteRenderer>().color = Color.gray;
-                //GetComponent<Enemy>().enabled = true;
                 break;
         }
     }
-    void Update()
-    {
-        
-    }
-
     public void CreatePlayerPlanet()
     {
         countOfShips = 50;
@@ -81,38 +72,29 @@ public class Planet : MonoBehaviour
         _leaveShipsCount = countOfShips / 2;
         countOfShips -= _leaveShipsCount;
         tmp.text = countOfShips.ToString();
-        //if (planetStatus == Status.Player)
             SpawnShips();
-       /* else
-            SpawnEnemyShips();*/
+
 
     }
     void SpawnShips()
     {
         List<Vector2> positionList = new List<Vector2>();
-        List<GameObject> shipsForEnemyList = new List<GameObject>();
+
+        List<Vector2> shipsList = new List<Vector2>();
+
         for (int i = 0; i < _leaveShipsCount; i++)
         {
             float angle = i * (360f / _leaveShipsCount);
             Vector2 pos2d = transform.position + new Vector3(Mathf.Sin(angle) * _planetRadius, Mathf.Cos(angle) * _planetRadius);
 
-            if (planetStatus == Status.Player)
-                Instantiate(ship, pos2d, ship.transform.rotation);
-            else
+            if (planetStatus != Status.Neutral)
             {
-                GameObject newPlanet = (GameObject)Instantiate(ship, pos2d, ship.transform.rotation);
-                Debug.Log("enemySpawn");
-                shipsForEnemyList.Add(newPlanet);
+                GameObject newShip = (GameObject)Instantiate(ship, pos2d, ship.transform.rotation);
                 
-            }
+                    newShip.GetComponent<Ship>().SetShip(_planetForAttack, this);
                 
-        }
-        if (planetStatus == Status.Enemy)
-        {
-            foreach (GameObject ship in shipsForEnemyList)
-            {
-                ship.GetComponent<Ship>().EnemyAttack(enemyAttackPlanet);
-            }
+                
+            }    
         }
     }
     public void SelectPlanet()
@@ -122,44 +104,42 @@ public class Planet : MonoBehaviour
     }
     void IncreaseShips()
     {
-        if (planetStatus != Status.Neutral)
+        if (planetStatus != Status.Neutral && countOfShips < _maxShips)
         {
             countOfShips++;
-            //UpdateEnemyShips();
             tmp.text = countOfShips.ToString();
         }
     }
-    public void TakeDamage()
+    public void TakeDamage(Ship.Status shipStatus)
     {
         if (countOfShips > 0)
         {
             countOfShips--;
-            //UpdateEnemyShips();
             tmp.text = countOfShips.ToString();
         }
         else
         {
-            planetStatus = Status.Player;
+            if (shipStatus == Ship.Status.Player)
+                planetStatus = Status.Player;
+            else
+            {
+                planetStatus = Status.Enemy;
+                selectLight.SetActive(false);
+            }
+                
+
             SetStatus();
             StartIncreasingShips();
         }
     }
-    void UpdateEnemyShips()
+    public void SetPlanetForAttack(GameObject planetForAttack)
     {
-       // enemy.UpdateCountOfShips(countOfShips);
+        _planetForAttack = planetForAttack;
     }
-    void SpawnEnemyShips()
-    {
-        
-        
-    }
-
     void StartIncreasingShips()
     {
-        InvokeRepeating("IncreaseShips", 0, .4f);
+        InvokeRepeating("IncreaseShips", 0, .45f);
     }
-    
-
     public void TakeComrads()
     {
         countOfShips++;

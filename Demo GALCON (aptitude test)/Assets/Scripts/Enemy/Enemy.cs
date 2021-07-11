@@ -4,67 +4,83 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    private Planet planet;
-    [SerializeField] private int _countOfShips;
-    private MapGenerator mapGenerator;
-    [SerializeField] private List<GameObject> _planetList;
-    [SerializeField] private List<GameObject> _planetsForAttackList;
     [SerializeField] private GameObject _planetForAttack;
-
+    [SerializeField]
+    private float _cooldown = 5f, startAttackTime = 3f;
+    private Planet  _capturedPlanet;
+    [SerializeField] private int _countOfShips;
+    [SerializeField] private MapGenerator mapGenerator;
+    private List<GameObject> _planetList;
+    [SerializeField] private List<GameObject> _planetsForAttackList;
+    [SerializeField] private List<GameObject> _capturedPlanetsList;
+    
 
     void Start()
     {
-        planet = GetComponent<Planet>();
-        mapGenerator = GameObject.FindGameObjectWithTag("Player").GetComponent<MapGenerator>();
         _planetList = mapGenerator.planetList;
-        InvokeRepeating("PickPlanetForAttack", 0, 3f);
-        InvokeRepeating("ClearPlanetForAttack", 1, 3f);
+        InvokeRepeating("UpdatePlanetLists", startAttackTime, _cooldown);
+        //InvokeRepeating("ClearPlanetLists", 3f, 5f);
     }
-    void Update()
+    void UpdatePlanetLists()
     {
-        
-    }
-
-    
-
-    void PickPlanetForAttack()
-    {
-        
-        _planetList = mapGenerator.planetList;
-        
         foreach (GameObject planet in _planetList)
         {
-            if (planet.GetComponent<Planet>().planetStatus != Planet.Status.Enemy)
+            if (planet.GetComponent<Planet>().planetStatus == Planet.Status.Enemy)
+            {
+                
+                _capturedPlanetsList.Add(planet);
+            }
+            else
             {
                 _planetsForAttackList.Add(planet);
             }
         }
-
-        Attack();
+        if (_capturedPlanetsList.Count > 0)
+        {
+            
+            PickAttackPlanet();
+            PickPlanetForAttack();
+            Attack();
+        }
+    }
+    void PickAttackPlanet()
+    {
+        foreach (GameObject planet in _capturedPlanetsList)
+        {
+            if (planet.GetComponent<Planet>().countOfShips > 25)
+            {
+                _capturedPlanet = planet.GetComponent<Planet>();
+                break;
+            }
+        }
+    }
+    void PickPlanetForAttack()
+    {
+        _planetForAttack = null;
+        foreach (GameObject planet in _planetsForAttackList)
+        {
+            if (_capturedPlanet.countOfShips / 2 > planet.GetComponent<Planet>().countOfShips)
+            {
+                _planetForAttack = planet;
+                
+            }
+        }
     }
     void Attack()
     {
-        if (_countOfShips > 24)
+        if (_planetForAttack != null)
         {
-            foreach (GameObject planetAttack in _planetsForAttackList)
-            {
-                if (planetAttack.GetComponent<Planet>().countOfShips < _countOfShips / 2)
-                {
-                    //attack
-                    _planetForAttack = planetAttack;
-                    planet.enemyAttackPlanet = _planetForAttack;
-                    planet.ReduceShips();
-                }
-            }
+            _capturedPlanet.SetPlanetForAttack(_planetForAttack);
+            _capturedPlanet.ReduceShips();
+            
         }
-
+        ClearPlanetLists();
     }
-    void ClearPlanetForAttack()
+    void ClearPlanetLists()
     {
         _planetsForAttackList.Clear();
+        _capturedPlanetsList.Clear();
     }
-
-
     public void UpdateCountOfShips(int ships)
     {
         _countOfShips = ships;

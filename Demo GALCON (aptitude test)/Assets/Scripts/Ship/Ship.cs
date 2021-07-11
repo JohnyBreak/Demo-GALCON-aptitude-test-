@@ -6,18 +6,50 @@ public class Ship : MonoBehaviour
 {
     [SerializeField] private float _speed = 2f;
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private GameObject sprite;
     private Seeker seeker;
     private Vector2 movePosition;
     private int _currentWaypoint;
     private Path path;
     private bool _reachedEndOfPath;
     private GameObject _planetForAttack;
+    public enum Status
+    {
+        Player,
+        Enemy
+    }
+    public Status shipStatus;
+
+    public void SetShip(GameObject planetForAttack, Planet startPlanet)
+    {
+        if (startPlanet.planetStatus == Planet.Status.Player)
+        {
+            shipStatus = Status.Player;
+        }
+        else
+        {
+            shipStatus = Status.Enemy;
+        }
+
+        _planetForAttack = planetForAttack;
+        switch (shipStatus)
+        {
+            case Status.Player:
+                sprite.GetComponent<SpriteRenderer>().color = Color.blue;
+                break;
+            case Status.Enemy:
+                sprite.GetComponent<SpriteRenderer>().color = Color.red;
+                break;
+            
+        }
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         seeker = GetComponent<Seeker>();
-        movePosition = GameObject.FindGameObjectWithTag("Player").GetComponent<Interaction>().GetLastAttackPosition();
-        _planetForAttack = GameObject.FindGameObjectWithTag("Player").GetComponent<Interaction>().GetPlanetForAttack();
+        movePosition = GameObject.FindGameObjectWithTag("Map").GetComponent<Interaction>().GetLastAttackPosition();
+        //_planetForAttack = GameObject.FindGameObjectWithTag("Map").GetComponent<Interaction>().GetPlanetForAttack();
         Move();
     }
     void FixedUpdate()
@@ -45,10 +77,15 @@ public class Ship : MonoBehaviour
     {
         if (collision.gameObject.GetComponent<Planet>() && collision.gameObject == _planetForAttack)
         {
-            if (collision.gameObject.GetComponent<Planet>().planetStatus != Planet.Status.Player)
-                collision.gameObject.GetComponent<Planet>().TakeDamage();
+            if (collision.gameObject.GetComponent<Planet>().planetStatus.ToString() != shipStatus.ToString())
+            {
+                collision.gameObject.GetComponent<Planet>().TakeDamage(this.shipStatus);
+            }
             else
+            {
                 collision.gameObject.GetComponent<Planet>().TakeComrads();
+            }
+                
 
             Destroy(this.gameObject);
         }

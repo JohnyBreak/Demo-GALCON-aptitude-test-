@@ -37,7 +37,7 @@ public class Interaction : MonoBehaviour
         hit = Physics2D.Raycast(origin, dir);
         if (hit)
         {
-            Debug.Log(hit.transform.name);
+            //Debug.Log(hit.transform.name);
             if (hit.transform.GetComponent<Planet>() != null)
             {
                 planet = hit.transform.GetComponent<Planet>();
@@ -82,7 +82,12 @@ public class Interaction : MonoBehaviour
         if (selectedPlanets.Count > 0)
         {
             lastClickedPlanet = hit.transform.gameObject;
-            Debug.Log("ATTACK");
+            foreach (Planet planet in selectedPlanets)
+            {
+                planet.SetPlanetForAttack(lastClickedPlanet);
+            }
+            
+            //Debug.Log("ATTACK");
             ReducingShips();
             foreach (Planet planet in selectedPlanets)
             {
@@ -92,15 +97,15 @@ public class Interaction : MonoBehaviour
         }
         else
         {
-            Debug.Log("SELECT YOUR PLANET");
+            //Debug.Log("SELECT YOUR PLANET");
         }
     }
 
 
-    public GameObject GetPlanetForAttack()
+    /*public GameObject GetPlanetForAttack()
     {
         return lastClickedPlanet;
-    }
+    }*/
 
     public Vector2 GetLastAttackPosition()
     {

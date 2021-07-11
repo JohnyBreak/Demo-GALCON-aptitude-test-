@@ -131,6 +131,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 150
   rb: {fileID: 786116631611393660}
+  sprite: {fileID: 8304262421912377326}
+  shipStatus: 0
 --- !u!114 &2887648450878860131
 MonoBehaviour:
   m_ObjectHideFlags: 0
